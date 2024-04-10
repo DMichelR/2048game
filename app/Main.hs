@@ -23,12 +23,8 @@ boxSize = 100.0
 numRowsAndCols :: Int
 numRowsAndCols = 4
 
-initialPositionRed :: (Float, Float)
-initialPositionRed = (-150, 150)
-
 horizontalLine :: Float -> Picture
 horizontalLine y = line [(-200 , y), (200 , y)]
-
 
 verticalLine :: Float -> Picture
 verticalLine x = line [(x, -200 ), (x, 200)]
@@ -43,16 +39,14 @@ drawGrid = pictures [horizontalLines, verticalLines,borderLines]
                             line [(-200, 200), (200, 200)],   
                             line [(-200, -200), (200, -200)]]  
 
-
 drawRed :: (Int, Int) -> Picture
 drawRed (row, col) = translate x y $ color red $ rectangleSolid boxSize boxSize
   where
     x = fromIntegral col * boxSize - 200 + boxSize / 2
     y = 200 - (fromIntegral row * boxSize) - boxSize / 2
 
-data GameState = GameState
+newtype GameState = GameState
   { playerPositionRed :: (Int, Int)}
-
 
 initialPositionRedCoord :: (Int, Int)
 initialPositionRedCoord = (0, 0)
@@ -65,7 +59,7 @@ updateImage (EventKey (SpecialKey KeyRight) Down _ _) gameState = movePlayer (0,
 updateImage _ gameState = gameState
 
 movePlayer :: (Int, Int) -> GameState -> GameState
-movePlayer (dx, dy) gameState@(GameState { playerPositionRed = (row, col) }) =
+movePlayer (dx, dy) gameState@GameState { playerPositionRed = (row, col) } =
   gameState { playerPositionRed = (newRow, newCol) }
   where
     newRow = boundValue 0 (numRowsAndCols - 1) (row + dx)
@@ -79,7 +73,6 @@ boundValue minVal maxVal val
 
 draw :: GameState -> Picture
 draw gameState = pictures [drawGrid, drawRed (playerPositionRed gameState)]
-
 
 main :: IO ()
 main = play window white 60 initialImage draw updateImage (\_ gameState -> gameState)
