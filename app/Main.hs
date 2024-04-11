@@ -171,8 +171,9 @@ main =
   do
     rands <- genRandomList
     let display = InWindow windowCaption windowSize windowPosition
-        (init, rands') = put rands $ replicate 4 [0, 0, 0, 0]
-        begin = (init, calcCellSize windowSize, rands')
+        (init1, rands1) = put rands $ replicate 4 [0, 0, 0, 0]
+        (init2, rands2) = put rands1 init1
+        begin = (init2, calcCellSize windowSize, rands2)
     play display windowBackground 0 begin draw handle (\_ x -> x)
 
 genRandomList :: IO [Int]
