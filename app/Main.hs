@@ -1,80 +1,141 @@
 module Main (main) where
 
-import Graphics.Gloss
-  ( Display (InWindow),
-    Picture,
-    color,
-    line,
-    pictures,
-    play,
-    rectangleSolid,
-    red,
-    translate,
-    white,
-  )
-import Graphics.Gloss.Interface.Pure.Game (Event (..), Key (..), KeyState (..), SpecialKey (..))
+import System.Random ( Random(randomRs), getStdGen )
+import Data.List ( transpose )
+import Graphics.Gloss.Interface.Pure.Game
+    ( rectangleSolid,
+      scale,
+      translate,
+      play,
+      makeColor,
+      Display(InWindow),
+      Color,
+      Picture(Pictures, Color, Text),
+      Key(SpecialKey),
+      Event(EventKey, EventResize),
+      KeyState(Down),
+      SpecialKey(KeyRight, KeyUp, KeyDown, KeyLeft) )
+import Prelude hiding (init)
 
-window :: Display
-window = InWindow "Basic Window" (800, 800) (10, 10)
+windowSize :: (Int, Int)
+windowSize         = (600, 600)
 
-boxSize :: Float
-boxSize = 100.0
+windowPosition :: (Int, Int)
+windowPosition     = (100, 100)
 
-numRowsAndCols :: Int
-numRowsAndCols = 4
+windowCaption :: String
+windowCaption      = "2048"
 
-horizontalLine :: Float -> Picture
-horizontalLine y = line [(-200 , y), (200 , y)]
+windowPadding :: Int
+windowPadding      = 10
 
-verticalLine :: Float -> Picture
-verticalLine x = line [(x, -200 ), (x, 200)]
+windowBackground :: Color
+windowBackground   = makeColor 128 92 64   255
 
-drawGrid :: Picture
-drawGrid = pictures [horizontalLines, verticalLines,borderLines]
+boardPadding :: Int
+boardPadding       = 10
+
+boardColor1 :: Color
+boardColor1        = makeColor 187 173 160 255
+
+cellColors :: [Color]
+cellColors         = [ makeColor 204 192 179 255, makeColor 238 228 218 255
+                     , makeColor 238 228 218 255, makeColor 237 224 200 255
+                     , makeColor 242 177 121 255, makeColor 245 149 99  255
+                     , makeColor 246 124 95 255, makeColor 237 207 114 255
+                     , makeColor 237 204 97 255, makeColor 237 200 80  255
+                     , makeColor 237 197 63 255, makeColor 237 194 46 255
+                     ]
+
+stp :: Int -> Int
+stp n | n <= 1 = 0
+      | otherwise = 1 + stp (n `div` 2)
+
+getColor :: Int -> Color
+getColor i = cellColors !! stp i
+
+type Game = ([[Int]], Int, [Int])
+
+calcCellSize :: (Int, Int) -> Int
+calcCellSize (a, b) = (min a b - 2 * windowPadding - 5 * boardPadding) `div` 4
+
+draw :: Game -> Picture
+draw (g, s, _r) =
+  let
+    fi = fromIntegral
+    rs = 4 * s + 5 * boardPadding
+    fr c (x, y) (w, h) = translate x y (Color c (rectangleSolid (fi w) (fi h)))
+    fc v x y = if v == 0 then fr (head cellColors) (fp x 1.5, fp y 1.5) (s, s)
+        else Pictures [fr (getColor v) (fp x 1.5, fp y 1.5) (s, s)
+          , translate (fp x 1.9) (fp y 1.7) (scale 0.4 0.5 (Text (show v)))]
+    fp a k = fi (s + boardPadding) * (fi a - k)
+  in
+    Pictures $ fr boardColor1 (0, 0) (rs, rs) : concat
+        (zipWith (\v y -> foldr (:) []
+            (zipWith (\val x -> fc val x y) v [0..3])) g [0..3])
+
+handle :: Event -> Game -> Game
+handle (EventResize ns) (g, _, rs) = (g, calcCellSize ns, rs)
+handle (EventKey (SpecialKey KeyUp)    Down _ _) g = go up    g
+handle (EventKey (SpecialKey KeyDown)  Down _ _) g = go down  g
+handle (EventKey (SpecialKey KeyLeft)  Down _ _) g = go left  g
+handle (EventKey (SpecialKey KeyRight) Down _ _) g = go right g
+handle _ g = g
+
+go :: ([[Int]] -> [[Int]]) -> Game -> Game
+go f (g, s, rs) =
+  let
+    g' = f g
+  in
+    if g == g' then (g, s, rs)
+    else let (g'', rs') = put rs g' in (g'', s, rs')
+
+put :: [Int] -> [[Int]] -> ([[Int]], [Int])
+put [] xss = (xss, [])
+put [_] xss = (xss, [])
+put (a:b:rs) xss =
+  let
+    n = if a < 2 then 4 else 2
+    x = b `mod` 4
+    y = b `div` 4
+    bss = take y xss
+    dropped = drop y xss
+  in
+    case dropped of
+      [] -> (xss, [])
+      (ms:ess) ->
+        let ms' = take x ms ++ [n] ++ drop (x+1) ms
+        in if ms !! x == 0 then (bss ++ [ms'] ++ ess, rs) else put rs xss
+
+up :: [[Int]] -> [[Int]]
+up    = transpose   . right . transpose
+
+down :: [[Int]] -> [[Int]]
+down  = transpose   . left  . transpose
+
+right :: [[Int]] -> [[Int]]
+right = map reverse . left  . map reverse
+
+left :: [[Int]] -> [[Int]]
+left = map f
   where
-    horizontalLines = pictures [horizontalLine (fromIntegral y * boxSize - 200) | y <- [0 .. numRowsAndCols]]
-    verticalLines = pictures [verticalLine (fromIntegral x * boxSize - 200) | x <- [0 .. numRowsAndCols]]
-    borderLines = pictures [line [(-200, -200), (-200, 200)],  
-                            line [(200, -200), (200, 200)],    
-                            line [(-200, 200), (200, 200)],   
-                            line [(-200, -200), (200, -200)]]  
-
-drawRed :: (Int, Int) -> Picture
-drawRed (row, col) = translate x y $ color red $ rectangleSolid boxSize boxSize
-  where
-    x = fromIntegral col * boxSize - 200 + boxSize / 2
-    y = 200 - (fromIntegral row * boxSize) - boxSize / 2
-
-newtype GameState = GameState
-  { playerPositionRed :: (Int, Int)}
-
-initialPositionRedCoord :: (Int, Int)
-initialPositionRedCoord = (0, 0)
-
-updateImage :: Event -> GameState -> GameState
-updateImage (EventKey (SpecialKey KeyUp) Down _ _) gameState = movePlayer (-1, 0) gameState
-updateImage (EventKey (SpecialKey KeyDown) Down _ _) gameState = movePlayer (1, 0) gameState
-updateImage (EventKey (SpecialKey KeyLeft) Down _ _) gameState = movePlayer (0, -1) gameState
-updateImage (EventKey (SpecialKey KeyRight) Down _ _) gameState = movePlayer (0, 1) gameState
-updateImage _ gameState = gameState
-
-movePlayer :: (Int, Int) -> GameState -> GameState
-movePlayer (dx, dy) gameState@GameState { playerPositionRed = (row, col) } =
-  gameState { playerPositionRed = (newRow, newCol) }
-  where
-    newRow = boundValue 0 (numRowsAndCols - 1) (row + dx)
-    newCol = boundValue 0 (numRowsAndCols - 1) (col + dy)
-
-boundValue :: Int -> Int -> Int -> Int
-boundValue minVal maxVal val
-  | val < minVal = minVal
-  | val > maxVal = maxVal
-  | otherwise    = val
-
-draw :: GameState -> Picture
-draw gameState = pictures [drawGrid, drawRed (playerPositionRed gameState)]
+    f xs = take 4 $ q (foldl g ([], 0) xs) ++ repeat 0
+    q (xs, x) = xs ++ [x]
+    g s@(ys, a) b
+      | a > 0 && a == b = (ys ++ [a * 2], 0)
+      | a > 0 && b > 0 = (ys ++ [a], b)
+      | a > 0 = s
+      | otherwise = (ys, b)
 
 main :: IO ()
-main = play window white 60 initialImage draw updateImage (\_ gameState -> gameState)
-  where
-    initialImage = GameState { playerPositionRed = initialPositionRedCoord}
+main =
+  do
+    rands <- genRandomList
+    let
+      display = InWindow windowCaption windowSize windowPosition
+      (init, rands') = put rands $ replicate 4 [0, 0, 0, 0]
+      begin = (init, calcCellSize windowSize, rands')
+    play display windowBackground 0 begin draw handle (\ _ x -> x)
+
+genRandomList :: IO [Int]
+genRandomList = randomRs (0, 15) <$> getStdGen

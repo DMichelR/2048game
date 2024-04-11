@@ -1,6 +1,6 @@
-name: gloss-poc
+name: Game2048
 version: 0.1.0.0
-github: "githubuser/gloss-poc"
+github: "githubuser/2048Game"
 license: BSD-3-Clause
 author: "Author name here"
 maintainer: "example@example.com"
@@ -22,6 +22,7 @@ description: Please see the README on GitHub at <https://github.com/githubuser/g
 dependencies:
   - base >= 4.7 && < 5
   - gloss
+  - random
 
 ghc-options:
   - -Wall
@@ -46,7 +47,7 @@ executables:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - gloss-poc
+      - Game2048
 
 tests:
   gloss-poc-test:
@@ -57,4 +58,4 @@ tests:
       - -rtsopts
       - -with-rtsopts=-N
     dependencies:
-      - gloss-poc
+      - Game2048

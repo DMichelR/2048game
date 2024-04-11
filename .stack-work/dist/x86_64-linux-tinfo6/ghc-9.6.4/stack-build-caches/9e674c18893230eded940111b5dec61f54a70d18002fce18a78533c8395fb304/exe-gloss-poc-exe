@@ -1,18 +1,18 @@
 ? /home/santi/.stack/programs/x86_64-linux/ghc-tinfo6-9.6.4/lib/ghc-9.6.4/lib/x86_64-linux-ghc-9.6.4/rts-1.0.2/include/ghcversion.h
 : hash: cbc0ab805e5b827180e3116cecd3f6665988df7f45a6b64f0e09ea8c25c438ff
-/home/santi/Desktop/2048game/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.4/build/gloss-poc-exe/autogen/Paths_gloss_poc.hs:
-  hash: c4be333abb8b8d9091090504a713b596549be3fd736c2bb7bcb651ef4c1950c6
+/home/santi/Desktop/2048game/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.4/build/gloss-poc-exe/autogen/Paths_Game2048.hs:
+  hash: 2357108ac38fe7478a4104fae028c39343570c348872246d9dd66af8ef83280a
 /home/santi/Desktop/2048game/.stack-work/dist/x86_64-linux-tinfo6/ghc-9.6.4/build/gloss-poc-exe/autogen/cabal_macros.h:
-  hash: 7305edaab0624b8f9e09bf01629452f38afe7b20b72c24772f3e8608fa799e3d
+  hash: 2bfb8733743aeabd19de68f7bfe6fa5b5f5ba54d7d923b731709e1e72da6a34e
 /home/santi/Desktop/2048game/CHANGELOG.md:
   hash: a86d854d25e952d014a5cd2867dc405f024f8c45e634d8b70fc34800e2c89b7c
+/home/santi/Desktop/2048game/Game2048.cabal:
+  hash: ba5878f170ddb6b1ab5bf761793ccc236c0ee393f5b359f6284a65f7fdc4d15b
 /home/santi/Desktop/2048game/README.md:
   hash: 00e7c3652585c35a34271387d1c906e50b74c528482c4c06f82c9e1354bdfa4f
 /home/santi/Desktop/2048game/app/Main.hs:
-  hash: 42886ed2dcd3c708613989fd141e9422632428872b7703093e0dcf87a3e9264a
-/home/santi/Desktop/2048game/gloss-poc.cabal:
-  hash: c92aa0be75d0c03a9f9c27190167b76624ac57421b1b5ffbb4b58cf4cdefdefd
+  hash: ff61a0c5dd8db500a4021b7272f66b2377a3f87a723df8cd4638b5da26eb5b1e
 /home/santi/Desktop/2048game/package.yaml:
-  hash: 549750620290a3932dfb88b8d00b0c6c81993e528e4a1949dbdea0de89a3792d
+  hash: 1e76965aa286c9fd3672c50c84bd773b87918ba776f306632107c1591bc941ed
 /usr/include/stdc-predef.h:
   hash: cb08cd5d4cc059a90833ac48a284d25016e8d56ded8ad4cd98d8ac59cc5053f3
