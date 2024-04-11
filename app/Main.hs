@@ -9,7 +9,9 @@ import Graphics.Gloss.Interface.Pure.Game
     KeyState (Down),
     Picture (Color, Pictures, Text),
     SpecialKey (KeyDown, KeyLeft, KeyRight, KeyUp),
+    line,
     makeColor,
+    pictures,
     play,
     rectangleSolid,
     scale,
@@ -19,7 +21,7 @@ import System.Random (Random (randomRs), getStdGen)
 import Prelude hiding (init)
 
 windowSize :: (Int, Int)
-windowSize = (600, 600)
+windowSize = (620, 620)
 
 windowPosition :: (Int, Int)
 windowPosition = (100, 100)
@@ -47,20 +49,20 @@ boardColor1 :: Color
 boardColor1 = makeColor 187 173 160 255
 
 boardColor2 :: Color
-boardColor2 = makeColor 87 73 60 200
+boardColor2 = makeColor 87 73 60 150
 
 cellColors :: [Color]
 cellColors =
   [ makeColor 204 192 179 255,
     makeColor 238 228 218 255,
     makeColor 238 228 218 255,
-    makeColor 237 224 200 255,
+    makeColor 237 224 150 255,
     makeColor 242 177 121 255,
     makeColor 245 149 99 255,
     makeColor 246 124 95 255,
     makeColor 237 207 114 255,
     makeColor 237 204 97 255,
-    makeColor 237 200 80 255,
+    makeColor 237 150 80 255,
     makeColor 237 197 63 255,
     makeColor 237 194 46 255
   ]
@@ -73,10 +75,37 @@ stp n
 getColor :: Int -> Color
 getColor i = cellColors !! stp i
 
+numRowsAndCols :: Int
+numRowsAndCols = 4
+
+horizontalLine :: Float -> Picture
+horizontalLine y = line [(-300, y), (300, y)]
+
+verticalLine :: Float -> Picture
+verticalLine x = line [(x, -300), (x, 300)]
+
 type Game = ([[Int]], Int, [Int])
 
 calcCellSize :: (Int, Int) -> Int
 calcCellSize (a, b) = fromIntegral ((min a b - 2 * windowPadding - 5 * boardPadding) `div` 4)
+
+boxSize :: Float
+boxSize = 150.0
+
+drawGrid :: Picture
+drawGrid = pictures [horizontalLines, verticalLines, borderLines]
+  where
+    horizontalLines = pictures [horizontalLine (fromIntegral y * boxSize - 300) | y <- [0 .. numRowsAndCols]]
+    verticalLines = pictures [verticalLine (fromIntegral x * boxSize - 300) | x <- [0 .. numRowsAndCols]]
+    borderLines =
+      pictures
+        [ line [(-300, -300), (-300, 300)],
+          line [(300, -300), (300, 300)],
+          line [(-300, 300), (300, 300)],
+          line [(-300, -300), (300, -300)]
+        ]
+
+-- Asegúrate de definir las funciones horizontalLine, verticalLine, boxSize y numRowsAndCols
 
 draw :: Game -> Picture
 draw (g, s, r) =
@@ -93,7 +122,7 @@ draw (g, s, r) =
               ]
       fp a k = fi (s + boardPadding) * (fi a - k)
    in Pictures $
-        [fr boardColor1 (0, 0) (rs, rs)]
+        [fr boardColor1 (0, 0) (rs, rs), drawGrid] -- Aquí se añade drawGrid
           ++ concat
             ( zipWith
                 ( \v y ->
