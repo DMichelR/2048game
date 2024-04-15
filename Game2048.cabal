@@ -43,6 +43,10 @@ library
 executable gloss-poc-exe
   main-is: Main.hs
   other-modules:
+      Constants
+      DrawBoard
+      Grids
+      LogicGame
       Paths_Game2048
   autogen-modules:
       Paths_Game2048
