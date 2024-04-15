@@ -1,9 +1,9 @@
 module LogicGame (module LogicGame) where
+
 import Graphics.Gloss
 import Constants
 import Grids
 import DrawBoard
-
 import Data.List (transpose)
 import Graphics.Gloss.Interface.Pure.Game
   ( 
@@ -20,7 +20,6 @@ import Graphics.Gloss.Interface.Pure.Game
   )
 import System.Random (Random (randomRs), getStdGen)
 
-
 drawGameOver :: Int -> Float -> [a] -> Picture
 drawGameOver boardSize cellSize gameOverList =
   if null gameOverList
@@ -33,7 +32,6 @@ drawGameOver boardSize cellSize gameOverList =
     toFloat = fromIntegral
     calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)    
 
-
 handle :: Event -> GameState -> GameState
 handle (EventResize ns) (GameState g _ rs) = GameState g (calcCellSize ns) rs
 handle (EventKey (SpecialKey KeyUp) Down _ _) g = updateGameState up g
@@ -43,20 +41,20 @@ handle (EventKey (SpecialKey KeyRight) Down _ _) g = updateGameState right g
 handle _ g = g
 
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
-updateGameState moveFunction (GameState currentBoard cellSize randomNumbers) =
-  if upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult
-    then GameState updatedBoard cellSize []
-    else if currentBoard == updatedBoard
-           then GameState updatedBoard cellSize randomNumbers
-           else let (newBoard, newRandomNumbers) = updateBoard randomNumbers updatedBoard
-                in GameState newBoard cellSize newRandomNumbers
+updateGameState moveFunction (GameState currentBoard cellSize randomNumbers)
+  | upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult
+    = GameState updatedBoard cellSize []
+  | currentBoard == updatedBoard
+    = GameState updatedBoard cellSize randomNumbers
+  | otherwise
+    = let (newBoard, newRandomNumbers) = updateBoard randomNumbers updatedBoard
+      in GameState newBoard cellSize newRandomNumbers
   where
     updatedBoard = moveFunction currentBoard
     upMoveResult = up currentBoard
     downMoveResult = down currentBoard
     leftMoveResult = left currentBoard
     rightMoveResult = right currentBoard
-
 
 updateBoard :: [Int] -> [[Int]] -> ([[Int]], [Int])
 updateBoard [] currentBoard = (currentBoard, [])
@@ -96,4 +94,3 @@ left :: [[Int]] -> [[Int]]
 left = map moveLeft
   where
     moveLeft xs = take 4 $ merge $ filter (/= 0) xs ++ repeat 0
-

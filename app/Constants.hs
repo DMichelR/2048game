@@ -1,4 +1,3 @@
-
 module Constants (module Constants) where
 
 import Graphics.Gloss.Interface.Pure.Game
@@ -64,3 +63,4 @@ cellColors =
     cyan,
     green
   ]
+  
