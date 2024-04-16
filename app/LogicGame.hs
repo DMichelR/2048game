@@ -49,26 +49,22 @@ drawGameOver boardSize cellSize gameOverList =
     calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)    
 
 handle :: Event -> GameState -> GameState
-handle (EventResize ns) (GameState g _ rs) = GameState g (calcCellSize ns) rs
-handle event gameState =
-  if checkWin (gameBoard gameState)
-    then gameState
-    else case event of
-      EventKey (SpecialKey KeyUp) Down _ _ -> updateGameState up gameState
-      EventKey (SpecialKey KeyDown) Down _ _ -> updateGameState down gameState
-      EventKey (SpecialKey KeyLeft) Down _ _ -> updateGameState left gameState
-      EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
-      _ -> gameState
+handle (EventResize ns) (GameState g _ rs currentScore maxScore) = GameState g (calcCellSize ns) rs currentScore maxScore
+handle (EventKey (SpecialKey KeyUp) Down _ _) g = updateGameState up g
+handle (EventKey (SpecialKey KeyDown) Down _ _) g = updateGameState down g
+handle (EventKey (SpecialKey KeyLeft) Down _ _) g = updateGameState left g
+handle (EventKey (SpecialKey KeyRight) Down _ _) g = updateGameState right g
+handle _ g = g
 
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
-updateGameState moveFunction (GameState currentBoard cellSize randomNumbers)
+updateGameState moveFunction (GameState currentBoard cellSize randomNumbers currentScore maxScore)
   | upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult
-    = GameState updatedBoard cellSize []
+    = GameState updatedBoard cellSize [] currentScore (max maxScore currentScore)
   | currentBoard == updatedBoard
-    = GameState updatedBoard cellSize randomNumbers
+    = GameState updatedBoard cellSize randomNumbers currentScore maxScore
   | otherwise
-    = let (newBoard, newRandomNumbers) = updateBoard randomNumbers updatedBoard
-      in GameState newBoard cellSize newRandomNumbers
+    = let (newBoard, newRandomNumbers, newScore) = updateBoard randomNumbers updatedBoard currentScore
+      in GameState newBoard cellSize newRandomNumbers newScore (max maxScore newScore)
   where
     updatedBoard = moveFunction currentBoard
     upMoveResult = up currentBoard
@@ -76,16 +72,16 @@ updateGameState moveFunction (GameState currentBoard cellSize randomNumbers)
     leftMoveResult = left currentBoard
     rightMoveResult = right currentBoard
 
-updateBoard :: [Int] -> [[Int]] -> ([[Int]], [Int])
-updateBoard [] currentBoard = (currentBoard, [])
-updateBoard [_] currentBoard = (currentBoard, [])
-updateBoard (a : b : rest) currentBoard =
+updateBoard :: [Int] -> [[Int]] -> Int -> ([[Int]], [Int], Int)
+updateBoard [] currentBoard currentScore = (currentBoard, [], currentScore)
+updateBoard [_] currentBoard currentScore = (currentBoard, [], currentScore)
+updateBoard (a : b : rest) currentBoard currentScore =
   case rowsAfter of
-    [] -> (currentBoard, [])
+    [] -> (currentBoard, [], currentScore)
     (row : remainingRows) ->
       if row !! xPosition == 0
-        then (rowsBefore ++ [newRow] ++ remainingRows, rest)
-        else updateBoard rest currentBoard
+        then (rowsBefore ++ [newRow] ++ remainingRows, rest, currentScore + newValue)
+        else updateBoard rest currentBoard currentScore
   where
     newValue = if a < 2 then 4 else 2
     xPosition = b `mod` 4

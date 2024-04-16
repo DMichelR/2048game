@@ -21,11 +21,13 @@ import Graphics.Gloss.Interface.Pure.Game
 data GameState = GameState
   { gameBoard :: [[Int]],
     cellSize :: Int,
-    randomNumbers :: [Int]
-  }  
+    randomNumbers :: [Int],
+    currentScore :: Int,
+    maxScore :: Int
+  }
 
 windowSize :: (Int, Int)
-windowSize = (620, 620)
+windowSize = (800, 800)
 
 windowPosition :: (Int, Int)
 windowPosition = (100, 100)
@@ -34,7 +36,7 @@ windowCaption :: String
 windowCaption = "2048"
 
 windowPadding :: Int
-windowPadding = 10
+windowPadding = 100
 
 windowBackground :: Color
 windowBackground = makeColor (140/255) (195/255) (74/255) 1.0
