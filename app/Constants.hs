@@ -26,7 +26,7 @@ data GameState = GameState
   }
 
 windowSize :: (Int, Int)
-windowSize = (800, 800)
+windowSize = (1000, 1000)
 
 windowPosition :: (Int, Int)
 windowPosition = (100, 100)
