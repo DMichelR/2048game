@@ -59,10 +59,10 @@ boardColorWin :: Color
 boardColorWin = makeColor 0.10980392157 0.4862745098 0.8862745098 1.0
 
 winText :: Picture
-winText = scale 0.4 0.5 $ Color white $ Text "you win!"
+winText = scale 0.4 0.5 $ Color white $ Text "you win !!"
 
 winningPoint :: Int
-winningPoint = 2046
+winningPoint = 2048
 
 cellColors :: [Color]
 cellColors =
