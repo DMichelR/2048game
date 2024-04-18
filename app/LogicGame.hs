@@ -20,6 +20,22 @@ import Graphics.Gloss.Interface.Pure.Game
   )
 import System.Random (Random (randomRs), getStdGen)
 
+checkWin :: [[Int]] -> Bool
+checkWin = any (elem winningPoint)
+
+drawWin :: Int -> Float -> [a] -> Picture
+drawWin boardSize cellSize gameOverList =
+  if checkWin gameState
+    then Pictures [drawWinRectangle boardColorWin (0, 0) (rectangleWidth, rectangleHeight), translate (calculatePosition 0 1) 0 winText]
+    else Blank
+  where
+    gameState = [[winningPoint]]
+    rectangleWidth = fromIntegral (4 * boardSize + 5 * boardPadding)
+    rectangleHeight = rectangleWidth
+    drawWinRectangle color (x, y) (width, height) = translate x y (Color color (rectangleSolid (toFloat width) (toFloat height)))
+    toFloat = fromIntegral
+    calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)
+
 drawGameOver :: Int -> Float -> [a] -> Picture
 drawGameOver boardSize cellSize gameOverList =
   if null gameOverList
@@ -34,11 +50,15 @@ drawGameOver boardSize cellSize gameOverList =
 
 handle :: Event -> GameState -> GameState
 handle (EventResize ns) (GameState g _ rs) = GameState g (calcCellSize ns) rs
-handle (EventKey (SpecialKey KeyUp) Down _ _) g = updateGameState up g
-handle (EventKey (SpecialKey KeyDown) Down _ _) g = updateGameState down g
-handle (EventKey (SpecialKey KeyLeft) Down _ _) g = updateGameState left g
-handle (EventKey (SpecialKey KeyRight) Down _ _) g = updateGameState right g
-handle _ g = g
+handle event gameState =
+  if checkWin (gameBoard gameState)
+    then gameState
+    else case event of
+      EventKey (SpecialKey KeyUp) Down _ _ -> updateGameState up gameState
+      EventKey (SpecialKey KeyDown) Down _ _ -> updateGameState down gameState
+      EventKey (SpecialKey KeyLeft) Down _ _ -> updateGameState left gameState
+      EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
+      _ -> gameState
 
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
 updateGameState moveFunction (GameState currentBoard cellSize randomNumbers)

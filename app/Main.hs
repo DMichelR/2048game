@@ -19,8 +19,8 @@ import DrawBoard
 draw :: GameState -> Picture
 draw (GameState g s r) =
   let fi = fromIntegral
-      rs = fromIntegral (4 * s + 5 * boardPadding)
-   in Pictures $ drawBoard g s rs : [drawGameOver s rs r]
+      rs = fromIntegral ( s  * boardPadding)
+   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r]
 
 main :: IO ()
 main = do
@@ -29,7 +29,7 @@ main = do
         (initialBoard1, randomNumbers1) = updateBoard randomNumbers $ replicate 4 [0, 0, 0, 0]
         (initialBoard2, randomNumbers2) = updateBoard randomNumbers1 initialBoard1
         initialState = GameState initialBoard2 (calcCellSize windowSize) randomNumbers2
-    play window windowBackground 0 initialState draw handle (\_ state -> state)
+    play window windowBackground 60 initialState draw handle (\_ state -> state)
 
 genRandomList :: IO [Int]
 genRandomList = randomRs (0, 15) <$> getStdGen
