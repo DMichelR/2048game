@@ -15,7 +15,7 @@ drawEmptyCell backgroundColor (x, y) (w, h) = translate x y (Color backgroundCol
 
 drawNonEmptyCell :: Int -> (Float, Float) -> (Float, Float) -> Picture
 drawNonEmptyCell value (x, y) (w, h) =
-  Pictures [drawRect (getColor value) (x, y) (w, h), drawValue (fromIntegral value) (x, y)]
+  Pictures [drawRect (getColor value) (x, y ) (w, h), drawValue (fromIntegral value) (x-30, y - 15)]
 
 drawCell :: Int -> Int -> Int -> Int -> Float -> Picture
 drawCell value x y size cellSize =
@@ -24,8 +24,6 @@ drawCell value x y size cellSize =
     else drawNonEmptyCell value (cellPos x 1.5, cellPos y 1.5) (floatToInt boardSize, floatToInt boardSize)
   where
     floatToInt = fromIntegral
-    drawRect c (x', y') (w, h) = translate x' y' (Color c (rectangleSolid (floatToInt w) (floatToInt h)))
-    drawValue val (x', y') = translate (cellPos x 1.9) (cellPos y 1.7) (scale 0.4 0.5 (Text (show val)))
     cellPos a k = floatToInt (boardSize + boardPadding) * (floatToInt a - k)
     boardSize = fromIntegral (size + boardPadding)
 
