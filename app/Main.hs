@@ -22,7 +22,6 @@ draw (GameState g s r) =
       rs = fromIntegral ( s  * boardPadding)
    in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r]
 
-
 main :: IO ()
 main = do
     randomNumbers <- genRandomList

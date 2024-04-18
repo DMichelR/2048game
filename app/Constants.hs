@@ -1,7 +1,6 @@
 module Constants (module Constants) where
+  
 import Graphics.Gloss.Data.Color
-
-
 import Graphics.Gloss.Interface.Pure.Game
   ( Color,
     Picture (Color, Pictures, Text),

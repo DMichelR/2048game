@@ -33,14 +33,12 @@ calcCellSize (a, b) = fromIntegral ((min a b - 2 * windowPadding - 5 * boardPadd
 drawRectangle :: Color -> (Float, Float) -> (Float, Float) -> Picture
 drawRectangle c (x, y) (w, h) = translate x y (Color c (rectangleSolid w h))
 
--- Función para dibujar el fondo del tablero
 drawBoardBackground :: Int -> Float -> Picture
 drawBoardBackground boardSize cellSize = drawRectangle boardColor1 (0, 0) (boardWidth, boardHeight)
   where
     boardWidth = fromIntegral (4 * boardSize + 5 * boardPadding)
     boardHeight = boardWidth
 
--- Función para dibujar el tablero del juego
 drawBoard :: [[Int]] -> Int -> Float -> Picture
 drawBoard g size cellSize =
   Pictures $

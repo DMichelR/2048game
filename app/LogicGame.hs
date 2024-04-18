@@ -21,7 +21,7 @@ import Graphics.Gloss.Interface.Pure.Game
 import System.Random (Random (randomRs), getStdGen)
 
 checkWin :: [[Int]] -> Bool
-checkWin gameBoard = any (any (== winningPoint)) gameBoard
+checkWin = any (elem winningPoint)
 
 drawWin :: Int -> Float -> [a] -> Picture
 drawWin boardSize cellSize gameOverList =
@@ -35,7 +35,6 @@ drawWin boardSize cellSize gameOverList =
     drawWinRectangle color (x, y) (width, height) = translate x y (Color color (rectangleSolid (toFloat width) (toFloat height)))
     toFloat = fromIntegral
     calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)
-
 
 drawGameOver :: Int -> Float -> [a] -> Picture
 drawGameOver boardSize cellSize gameOverList =
@@ -60,8 +59,6 @@ handle event gameState =
       EventKey (SpecialKey KeyLeft) Down _ _ -> updateGameState left gameState
       EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
       _ -> gameState
-
-
 
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
 updateGameState moveFunction (GameState currentBoard cellSize randomNumbers)
