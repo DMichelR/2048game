@@ -49,12 +49,17 @@ drawGameOver boardSize cellSize gameOverList =
     calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)    
 
 handle :: Event -> GameState -> GameState
-handle (EventResize ns) (GameState g _ rs currentScore maxScore) = GameState g (calcCellSize ns) rs currentScore maxScore
-handle (EventKey (SpecialKey KeyUp) Down _ _) g = updateGameState up g
-handle (EventKey (SpecialKey KeyDown) Down _ _) g = updateGameState down g
-handle (EventKey (SpecialKey KeyLeft) Down _ _) g = updateGameState left g
-handle (EventKey (SpecialKey KeyRight) Down _ _) g = updateGameState right g
-handle _ g = g
+handle (EventResize ns) (GameState g cellSize rs currentScore maxScore) = GameState g (calcCellSize ns) rs currentScore maxScore
+handle event gameState@(GameState board _ _ _ _) =
+  if checkWin board
+    then gameState 
+    else case event of
+      EventKey (SpecialKey KeyUp) Down _ _ -> updateGameState up gameState
+      EventKey (SpecialKey KeyDown) Down _ _ -> updateGameState down gameState
+      EventKey (SpecialKey KeyLeft) Down _ _ -> updateGameState left gameState
+      EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
+      _ -> gameState
+
 
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
 updateGameState moveFunction (GameState currentBoard cellSize randomNumbers currentScore maxScore)
