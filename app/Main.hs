@@ -20,7 +20,8 @@ draw :: GameState -> Picture
 draw (GameState g s r currentScore maxScore) =
   let rs = fromIntegral (4 * s + 5 * boardPadding)
       scoreText = scale 0.3 0.3 $ Color white $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
-   in Pictures $ drawBoard g s rs : [drawGameOver s rs r, translate (-rs / 2) (rs / 2 + 20) scoreText]
+   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2) (rs / 2 + 20) scoreText]
+
 
 main :: IO ()
 main = do
