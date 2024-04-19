@@ -1,21 +1,20 @@
 module Constants (module Constants) where
-  
+
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Interface.Pure.Game
   ( Color,
     Picture (Color, Pictures, Text),
-    scale,
-    translate,
-    rectangleSolid,
-    orange,
-    yellow,
-    red,
-    white,
     blue,
-    magenta,
     cyan,
     green,
-
+    magenta,
+    orange,
+    rectangleSolid,
+    red,
+    scale,
+    translate,
+    white,
+    yellow,
   )
 
 data GameState = GameState
@@ -23,7 +22,9 @@ data GameState = GameState
     cellSize :: Int,
     randomNumbers :: [Int],
     currentScore :: Int,
-    maxScore :: Int
+    maxScore :: Int,
+    gameEnded :: Bool,
+    finalScore :: Int
   }
 
 windowSize :: (Int, Int)
@@ -39,13 +40,13 @@ windowPadding :: Int
 windowPadding = 100
 
 windowBackground :: Color
-windowBackground = makeColor (140/255) (195/255) (74/255) 1.0
+windowBackground = makeColor (140 / 255) (195 / 255) (74 / 255) 1.0
 
 boardPadding :: Int
 boardPadding = 9
 
 boardColor1 :: Color
-boardColor1 = makeColor (140/255) (195/255) (74/255) 1.0
+boardColor1 = makeColor (140 / 255) (195 / 255) (74 / 255) 1.0
 
 boardColorLose :: Color
 boardColorLose = red
@@ -68,10 +69,10 @@ winningPoint = 2048
 cellColors :: [Color]
 cellColors =
   [ white,
-   makeColor (58/255) (160/255) (47/255) 1.0,
-    makeColor (105/255) (191/255) (89/255) 1.0,
-    makeColor (3/255) (187/255) (133/255) 1.0,
-    makeColor (152/255) (223/255) (130/255) 1.0,
-    makeColor (199/255) (255/255) (172/255) 1.0,
-     makeColor (104/255) (221/255) (189/255) 1.0
+    makeColor (58 / 255) (160 / 255) (47 / 255) 1.0,
+    makeColor (105 / 255) (191 / 255) (89 / 255) 1.0,
+    makeColor (3 / 255) (187 / 255) (133 / 255) 1.0,
+    makeColor (152 / 255) (223 / 255) (130 / 255) 1.0,
+    makeColor (199 / 255) (255 / 255) (172 / 255) 1.0,
+    makeColor (104 / 255) (221 / 255) (189 / 255) 1.0
   ]
