@@ -1,13 +1,11 @@
 module LogicGame (module LogicGame) where
 
-import Graphics.Gloss
 import Constants
-import Grids
-import DrawBoard
 import Data.List (transpose)
+import DrawBoard
+import Graphics.Gloss
 import Graphics.Gloss.Interface.Pure.Game
-  ( 
-    Display (InWindow),
+  ( Display (InWindow),
     Event (EventKey, EventResize),
     Key (SpecialKey),
     KeyState (Down),
@@ -16,8 +14,8 @@ import Graphics.Gloss.Interface.Pure.Game
     makeColor,
     pictures,
     play,
-    
   )
+import Grids
 import System.Random (Random (randomRs), getStdGen)
 
 checkWin :: [[Int]] -> Bool
@@ -46,13 +44,13 @@ drawGameOver boardSize cellSize gameOverList =
     rectangleHeight = rectangleWidth
     drawGameOverRectangle color (x, y) (width, height) = translate x y (Color color (rectangleSolid (toFloat width) (toFloat height)))
     toFloat = fromIntegral
-    calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)    
+    calculatePosition a k = toFloat (boardSize + boardPadding) * (toFloat a - k)
 
 handle :: Event -> GameState -> GameState
-handle (EventResize ns) (GameState g cellSize rs currentScore maxScore) = GameState g (calcCellSize ns) rs currentScore maxScore
-handle event gameState@(GameState board _ _ _ _) =
+handle (EventResize ns) (GameState g cellSize rs currentScore maxScore ended finalScore) = GameState g (calcCellSize ns) rs currentScore maxScore ended finalScore
+handle event gameState@(GameState board _ _ _ _ _ _) =
   if checkWin board
-    then gameState 
+    then gameState {gameEnded = True, finalScore = max (currentScore gameState) (maxScore gameState)}
     else case event of
       EventKey (SpecialKey KeyUp) Down _ _ -> updateGameState up gameState
       EventKey (SpecialKey KeyDown) Down _ _ -> updateGameState down gameState
@@ -60,16 +58,15 @@ handle event gameState@(GameState board _ _ _ _) =
       EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
       _ -> gameState
 
-
 updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
-updateGameState moveFunction (GameState currentBoard cellSize randomNumbers currentScore maxScore)
-  | upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult
-    = GameState updatedBoard cellSize [] currentScore (max maxScore currentScore)
-  | currentBoard == updatedBoard
-    = GameState updatedBoard cellSize randomNumbers currentScore maxScore
-  | otherwise
-    = let (newBoard, newRandomNumbers, newScore) = updateBoard randomNumbers updatedBoard currentScore
-      in GameState newBoard cellSize newRandomNumbers newScore (max maxScore newScore)
+updateGameState moveFunction (GameState currentBoard cellSize randomNumbers currentScore maxScore ended finalScore)
+  | upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult =
+      GameState updatedBoard cellSize [] currentScore (max maxScore currentScore) True (max currentScore maxScore)
+  | currentBoard == updatedBoard =
+      GameState updatedBoard cellSize randomNumbers currentScore maxScore ended finalScore
+  | otherwise =
+      let (newBoard, newRandomNumbers, newScore) = updateBoard randomNumbers updatedBoard currentScore
+       in GameState newBoard cellSize newRandomNumbers newScore (max maxScore newScore) ended finalScore
   where
     updatedBoard = moveFunction currentBoard
     upMoveResult = up currentBoard
@@ -107,7 +104,7 @@ right = map reverse . left . map reverse
 merge :: [Int] -> [Int]
 merge [] = []
 merge [x] = [x]
-merge (x:y:zs)
+merge (x : y : zs)
   | x == y = (x * 2) : merge zs
   | otherwise = x : merge (y : zs)
 
