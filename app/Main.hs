@@ -24,28 +24,25 @@ draw :: GameState -> Picture
 draw (GameState g s r currentScore maxScore ended finalScore) =
   let rs = fromIntegral (4 * s + 5 * boardPadding)
       scoreText = scale 0.3 0.3 $ Color white $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
-   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2) (rs / 2 + 20) scoreText]
+      button = newGameButton
+   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2) (rs / 2 + 20) scoreText, button s]
 
 main :: IO ()
 main = do
-  content <- readFile "app/maxScore.txt"
-  let maxScore = read content :: Int
-  randomNumbers <- genRandomList
-  let window = InWindow windowCaption windowSize windowPosition
-      (initialBoard1, randomNumbers1, _) = updateBoard randomNumbers (replicate 4 [0, 0, 0, 0]) 0
-      (initialBoard2, randomNumbers2, _) = updateBoard randomNumbers1 initialBoard1 0
-      initialState = GameState initialBoard2 (calcCellSize windowSize) randomNumbers2 0 maxScore False maxScore
-  finalScoreRef <- newIORef 0
-  let handle' event state = do
-        let newState = handle event state
-        when (gameEnded newState) $ do
-          putStrLn "Game ended, writing final score to file"
-          writeIORef finalScoreRef (finalScore newState)
-          finalScore <- readIORef finalScoreRef
-          writeFile "app/maxScore.txt" (show finalScore)
-        return $ newState {gameEnded = False}
+    content <- readFile "app/maxScore.txt"
+    let maxScore = read content :: Int
+    randomNumbers <- genRandomList
+    let window = InWindow windowCaption windowSize windowPosition
+        initialState = createInitialState randomNumbers maxScore
+    finalScoreRef <- newIORef 0
+    playIO window windowBackground 0 initialState (return . draw) (handleEvent finalScoreRef) updateState
 
-  playIO window windowBackground 0 initialState (return . draw) handle' (\_ state -> return state)
+createInitialState :: [Int] -> Int -> GameState
+createInitialState randomNumbers score =
+    let (initialBoard1, randomNumbers1, _) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 0
+        (initialBoard2, randomNumbers2, _) = updateBoard randomNumbers1 initialBoard1 0
+    in GameState initialBoard2 (calcCellSize windowSize) randomNumbers2 0 score False score
 
-genRandomList :: IO [Int]
-genRandomList = randomRs (0, 15) <$> getStdGen
+updateState :: Float -> GameState -> IO GameState
+updateState _ state = return state
+
