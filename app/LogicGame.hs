@@ -121,7 +121,7 @@ newGameButton :: Int -> Picture
 newGameButton s = Pictures [button, buttonText]
   where
     rs = fromIntegral (4*s + 5*boardPadding)
-    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   300 (rs / 2 + 40)  $ rectangleSolid 140 60
+    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   310 (rs / 2 + 40)  $ rectangleSolid 180 60
     buttonText = Color black $ translate 250 (rs / 2 + 40) $ scale 0.15 0.15 $ Text "Restart Game"
 
 newGame :: GameState -> IO GameState
