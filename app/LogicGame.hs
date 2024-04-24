@@ -121,8 +121,8 @@ newGameButton :: Int -> Picture
 newGameButton s = Pictures [button, buttonText]
   where
     rs = fromIntegral (4*s + 5*boardPadding)
-    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   300 (rs / 2 + 40)  $ rectangleSolid 140 60
-    buttonText = Color black $ translate 250 (rs / 2 + 40) $ scale 0.15 0.15 $ Text "Restart Game"
+    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   0 (rs / 2 + 80)  $ rectangleSolid 180 40
+    buttonText = Color black $ translate (-60) (rs / 2 + 70) $ scale 0.15 0.15 $ Text "Restart Game"
 
 newGame :: GameState -> IO GameState
 newGame state = do
@@ -132,11 +132,10 @@ newGame state = do
     return $ state { gameBoard = initialBoard2, randomNumbers = randomNumbers2, currentScore = 0, gameEnded = False }
 
 
-
 handleEvent :: IORef Int -> Event -> GameState -> IO GameState
 handleEvent finalScoreRef event state = case event of
     EventKey (MouseButton LeftButton) Down _ (x, y)
-        | x > 125 && x < 375 && y > 175 && y < 425 -> newGame state
+        | x > (-100) && x < 100 && y > 350 && y < 500 -> newGame state
     _ -> do
         let newState = handle event state
         when (gameEnded newState) $ do
