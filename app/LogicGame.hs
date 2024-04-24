@@ -1,9 +1,12 @@
 module LogicGame (module LogicGame) where
 
 import Constants
+import Control.Monad (when)
 import Data.List (transpose)
 import DrawBoard
+import Data.IORef
 import Graphics.Gloss
+import Graphics.Gloss.Interface.IO.Game
 import Graphics.Gloss.Interface.Pure.Game
   ( Display (InWindow),
     Event (EventKey, EventResize),
@@ -112,3 +115,34 @@ left :: [[Int]] -> [[Int]]
 left = map moveLeft
   where
     moveLeft xs = take 4 $ merge $ filter (/= 0) xs ++ repeat 0
+
+
+newGameButton :: Int -> Picture
+newGameButton s = Pictures [button, buttonText]
+  where
+    rs = fromIntegral (4*s + 5*boardPadding)
+    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   300 (rs / 2 + 40)  $ rectangleSolid 140 60
+    buttonText = Color black $ translate 250 (rs / 2 + 40) $ scale 0.15 0.15 $ Text "Restart Game"
+
+newGame :: GameState -> IO GameState
+newGame state = do
+    randomNumbers <- genRandomList
+    let (initialBoard1, randomNumbers1, _) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 0
+        (initialBoard2, randomNumbers2, _) = updateBoard randomNumbers1 initialBoard1 0
+    return $ state { gameBoard = initialBoard2, randomNumbers = randomNumbers2, currentScore = 0, gameEnded = False }
+
+
+
+handleEvent :: IORef Int -> Event -> GameState -> IO GameState
+handleEvent finalScoreRef event state = case event of
+    EventKey (MouseButton LeftButton) Down _ (x, y)
+        | x > 125 && x < 375 && y > 175 && y < 425 -> newGame state
+    _ -> do
+        let newState = handle event state
+        when (gameEnded newState) $ do
+            putStrLn "Juego finalizado, escribiendo puntuación final en el archivo"
+            writeIORef finalScoreRef (finalScore newState)
+        return newState
+
+genRandomList :: IO [Int]
+genRandomList = randomRs (0, 15) <$> getStdGen        
