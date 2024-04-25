@@ -23,9 +23,11 @@ import System.Random (Random (randomRs), getStdGen)
 draw :: GameState -> Picture
 draw (GameState g s r currentScore maxScore ended finalScore) =
   let rs = fromIntegral (4 * s + 6 * boardPadding)
-      scoreText = scale 0.3 0.3 $ Color (makeColor (184 / 255) (174 / 255) (161 / 255) 1.0) $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
+      scoreBorder = Color (makeColor (184 / 255) (174 / 255) (161 / 255) 1.0) $ translate (-rs / 350) (rs / 2 + 65) $ rectangleSolid 717 60
+      scoreBackground = Color (makeColor (202 / 255) (193 / 255) (181 / 255) 1.0) $ translate (-rs / 350) (rs / 2 + 65) $ rectangleSolid 707 50
+      scoreText = Color (makeColor (251 / 255) (248 / 255) (239 / 255) 1.0) $ translate (-rs / 2.32) (rs / 2 + 50) $ scale 0.3 0.3 $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
       button = translate 0 (-830) $ newGameButton s
-   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2.32) (rs / 2 + 35) scoreText, button]
+   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, Pictures [scoreBorder, scoreBackground, scoreText], button]
 
 main :: IO ()
 main = do
