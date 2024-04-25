@@ -31,7 +31,7 @@ drawWin boardSize cellSize gameOverList =
     else Blank
   where
     gameState = [[winningPoint]]
-    rectangleWidth = fromIntegral (4 * boardSize + 5 * boardPadding)
+    rectangleWidth = fromIntegral (4 * boardSize + 7 * boardPadding)
     rectangleHeight = rectangleWidth
     drawWinRectangle color (x, y) (width, height) = translate x y (Color color (rectangleSolid (toFloat width) (toFloat height)))
     toFloat = fromIntegral
@@ -43,7 +43,7 @@ drawGameOver boardSize cellSize gameOverList =
     then Pictures [drawGameOverRectangle boardColorLose (0, 0) (rectangleWidth, rectangleHeight), translate (calculatePosition 0 1) 0 gameOverText]
     else Blank
   where
-    rectangleWidth = fromIntegral (4 * boardSize + 5 * boardPadding)
+    rectangleWidth = fromIntegral (4 * boardSize + 7 * boardPadding)
     rectangleHeight = rectangleWidth
     drawGameOverRectangle color (x, y) (width, height) = translate x y (Color color (rectangleSolid (toFloat width) (toFloat height)))
     toFloat = fromIntegral
@@ -61,32 +61,34 @@ handle event gameState@(GameState board _ _ _ _ _ _) =
       EventKey (SpecialKey KeyRight) Down _ _ -> updateGameState right gameState
       _ -> gameState
 
-updateGameState :: ([[Int]] -> [[Int]]) -> GameState -> GameState
+updateGameState :: ([[Int]] -> ([[Int]], Int)) -> GameState -> GameState
 updateGameState moveFunction (GameState currentBoard cellSize randomNumbers currentScore maxScore ended finalScore)
-  | upMoveResult == downMoveResult && downMoveResult == leftMoveResult && leftMoveResult == rightMoveResult =
+  | fst upMoveResult == fst downMoveResult && fst downMoveResult == fst leftMoveResult && fst leftMoveResult == fst rightMoveResult =
       GameState updatedBoard cellSize [] currentScore (max maxScore currentScore) True (max currentScore maxScore)
   | currentBoard == updatedBoard =
       GameState updatedBoard cellSize randomNumbers currentScore maxScore ended finalScore
   | otherwise =
-      let (newBoard, newRandomNumbers, newScore) = updateBoard randomNumbers updatedBoard currentScore
-       in GameState newBoard cellSize newRandomNumbers newScore (max maxScore newScore) ended finalScore
+      let (newBoard, newRandomNumbers) = updateBoard randomNumbers updatedBoard
+       in GameState newBoard cellSize newRandomNumbers newScore maxScore' ended finalScore
   where
-    updatedBoard = moveFunction currentBoard
+    (updatedBoard, sum) = moveFunction currentBoard
     upMoveResult = up currentBoard
     downMoveResult = down currentBoard
     leftMoveResult = left currentBoard
     rightMoveResult = right currentBoard
+    newScore = currentScore + sum
+    maxScore' = max maxScore newScore 
 
-updateBoard :: [Int] -> [[Int]] -> Int -> ([[Int]], [Int], Int)
-updateBoard [] currentBoard currentScore = (currentBoard, [], currentScore)
-updateBoard [_] currentBoard currentScore = (currentBoard, [], currentScore)
-updateBoard (a : b : rest) currentBoard currentScore =
+updateBoard :: [Int] -> [[Int]] -> ([[Int]], [Int])
+updateBoard [] currentBoard = (currentBoard, [])
+updateBoard [_] currentBoard = (currentBoard, [])
+updateBoard (a : b : rest) currentBoard =
   case rowsAfter of
-    [] -> (currentBoard, [], currentScore)
+    [] -> (currentBoard, [])
     (row : remainingRows) ->
       if row !! xPosition == 0
-        then (rowsBefore ++ [newRow] ++ remainingRows, rest, currentScore + newValue)
-        else updateBoard rest currentBoard currentScore
+        then (rowsBefore ++ [newRow] ++ remainingRows, rest)
+        else updateBoard rest currentBoard
   where
     newValue = if a < 2 then 4 else 2
     xPosition = b `mod` 4
@@ -94,54 +96,62 @@ updateBoard (a : b : rest) currentBoard currentScore =
     rowsBefore = take yPosition currentBoard
     rowsAfter = drop yPosition currentBoard
     newRow = take xPosition (head rowsAfter) ++ [newValue] ++ drop (xPosition + 1) (head rowsAfter)
+    
+up :: [[Int]] -> ([[Int]], Int)
+up xs = let (boards, sumVal) = left $ map reverse $ transpose xs in (transpose $ map reverse boards, sumVal)
 
-up :: [[Int]] -> [[Int]]
-up = transpose . right . transpose
+down :: [[Int]] -> ([[Int]], Int)
+down xs = let (boards, sumVal) = right $ map reverse $ transpose xs in (transpose $ map reverse boards, sumVal)
 
-down :: [[Int]] -> [[Int]]
-down = transpose . left . transpose
+right :: [[Int]] -> ([[Int]], Int)
+right xs = let (boards, sumVal) = left $ map reverse xs in (map reverse boards, sumVal)
 
-right :: [[Int]] -> [[Int]]
-right = map reverse . left . map reverse
+left :: [[Int]] -> ([[Int]], Int)
+left xs = let (boards, sums) = unzip $ map moveLeft xs in (boards, sum sums)
+    
+merge :: [Int] -> Int -> ([Int], Int)
+merge [] sumVal = ([], sumVal)
+merge [x] sumVal = ([x], sumVal)
+merge (x : y : zs) sumVal
+  | x == y = let (merged, newSum) = merge zs (sumVal + x * 2) in ((x * 2) : merged, newSum)
+  | otherwise = let (merged, newSum) = merge (y:zs) sumVal in (x : merged, newSum)
 
-merge :: [Int] -> [Int]
-merge [] = []
-merge [x] = [x]
-merge (x : y : zs)
-  | x == y = (x * 2) : merge zs
-  | otherwise = x : merge (y : zs)
+ensureFour :: [Int] -> [Int]
+ensureFour xs = let filtered = filter (/= 0) xs
+                    len = length filtered
+                in  if len < 4 then filtered ++ replicate (4 - len) 0 else filtered
 
-left :: [[Int]] -> [[Int]]
-left = map moveLeft
-  where
-    moveLeft xs = take 4 $ merge $ filter (/= 0) xs ++ repeat 0
+ensureFourRight :: [Int] -> [Int]
+ensureFourRight xs = let len = length xs
+                     in  if len < 4 then xs ++ replicate (4 - len) 0 else xs
 
+moveLeft :: [Int] -> ([Int], Int)
+moveLeft xs = let (merged, sumVal) = merge (ensureFour xs) 0 in (ensureFourRight merged, sumVal)
 
 newGameButton :: Int -> Picture
-newGameButton s = Pictures [button, buttonText]
+newGameButton s = Pictures [border, button, buttonText]
   where
-    rs = fromIntegral (4*s + 5*boardPadding)
-    button = Color (makeColor 0.4 0.8 0.4 1) $ translate   0 (rs / 2 + 80)  $ rectangleSolid 180 40
-    buttonText = Color black $ translate (-60) (rs / 2 + 70) $ scale 0.15 0.15 $ Text "Restart Game"
+    rs = fromIntegral (4 * s + 6 * boardPadding)
+    border = Color (makeColor (184 / 255) (174 / 255) (161 / 255) 1.0) $ translate 0 (rs / 2 + 80) $ rectangleSolid 160 60
+    button = Color (makeColor (202 / 255) (193 / 255) (181 / 255) 1.0) $ translate   0 (rs / 2 + 80)  $ rectangleSolid 150 50
+    buttonText = Color (makeColor (251 / 255) (248 / 255) (239 / 255) 1.0) $ translate (-65) (rs / 2 + 70) $ scale 0.15 0.15 $ Text "Restart Game"
 
 newGame :: GameState -> IO GameState
 newGame state = do
     randomNumbers <- genRandomList
-    let (initialBoard1, randomNumbers1, _) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 0
-        (initialBoard2, randomNumbers2, _) = updateBoard randomNumbers1 initialBoard1 0
+    let (initialBoard1, randomNumbers1) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 
+        (initialBoard2, randomNumbers2) = updateBoard randomNumbers1 initialBoard1 
     return $ state { gameBoard = initialBoard2, randomNumbers = randomNumbers2, currentScore = 0, gameEnded = False }
-
 
 handleEvent :: IORef Int -> Event -> GameState -> IO GameState
 handleEvent finalScoreRef event state = case event of
     EventKey (MouseButton LeftButton) Down _ (x, y)
-        | x > (-100) && x < 100 && y > 350 && y < 500 -> newGame state
+        | x > (-76) && x < 76 && y > (-432) && y < (-382) -> newGame state
     _ -> do
         let newState = handle event state
         when (gameEnded newState) $ do
-            putStrLn "Juego finalizado, escribiendo puntuación final en el archivo"
             writeIORef finalScoreRef (finalScore newState)
         return newState
 
 genRandomList :: IO [Int]
-genRandomList = randomRs (0, 15) <$> getStdGen        
+genRandomList = randomRs (0, 15) <$> getStdGen

@@ -25,8 +25,10 @@ source-repository head
 
 library
   exposed-modules:
-      Lib
-      Poc
+      Constants
+      DrawBoard
+      Grids
+      LogicGame
   other-modules:
       Paths_Game2048
   autogen-modules:
@@ -43,10 +45,6 @@ library
 executable gloss-poc-exe
   main-is: Main.hs
   other-modules:
-      Constants
-      DrawBoard
-      Grids
-      LogicGame
       Paths_Game2048
   autogen-modules:
       Paths_Game2048
@@ -72,6 +70,7 @@ test-suite gloss-poc-test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       Game2048
+    , QuickCheck
     , base >=4.7 && <5
     , gloss
     , random

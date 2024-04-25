@@ -22,10 +22,10 @@ import System.Random (Random (randomRs), getStdGen)
 
 draw :: GameState -> Picture
 draw (GameState g s r currentScore maxScore ended finalScore) =
-  let rs = fromIntegral (4 * s + 5 * boardPadding)
-      scoreText = scale 0.3 0.3 $ Color white $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
-      button = newGameButton
-   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2) (rs / 2 + 20) scoreText, button s]
+  let rs = fromIntegral (4 * s + 6 * boardPadding)
+      scoreText = scale 0.3 0.3 $ Color (makeColor (184 / 255) (174 / 255) (161 / 255) 1.0) $ Text ("Score: " ++ show currentScore ++ " Max Score: " ++ show maxScore)
+      button = translate 0 (-830) $ newGameButton s
+   in Pictures $ drawBoard g s rs : [if checkWin g then drawWin s rs r else drawGameOver s rs r, translate (-rs / 2.32) (rs / 2 + 35) scoreText, button]
 
 main :: IO ()
 main = do
@@ -39,10 +39,9 @@ main = do
 
 createInitialState :: [Int] -> Int -> GameState
 createInitialState randomNumbers score =
-    let (initialBoard1, randomNumbers1, _) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 0
-        (initialBoard2, randomNumbers2, _) = updateBoard randomNumbers1 initialBoard1 0
+    let (initialBoard1, randomNumbers1) = updateBoard randomNumbers (replicate 4 (replicate 4 0)) 
+        (initialBoard2, randomNumbers2) = updateBoard randomNumbers1 initialBoard1 
     in GameState initialBoard2 (calcCellSize windowSize) randomNumbers2 0 score False score
 
 updateState :: Float -> GameState -> IO GameState
-updateState _ state = return state
-
+updateState _ = return

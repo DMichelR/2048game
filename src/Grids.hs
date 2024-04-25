@@ -7,6 +7,7 @@ import Graphics.Gloss.Interface.Pure.Game
     scale,
     translate,
     rectangleSolid,
+    makeColor
   )
 
 colorIndex :: Int -> Int
@@ -21,4 +22,4 @@ drawRect :: Color -> (Float, Float) -> (Float, Float) -> Picture
 drawRect c (x, y) (w, h) = translate x y (Color c (rectangleSolid (fromIntegral (round w)) (fromIntegral (round h))))
 
 drawValue :: Int -> (Float, Float) -> Picture
-drawValue value (x, y) = translate x y (scale 0.3 0.3 (Text (show value)))
+drawValue value (x, y) = translate x y $ Color (makeColor (251 / 255) (248 / 255) (239 / 255) 1.0) $ scale 0.3 0.3 $ Text (show value)
